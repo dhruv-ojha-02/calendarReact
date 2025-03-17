@@ -10,9 +10,9 @@ function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<MonthCalendar />} />
-          <Route path="/month" element={<MonthCalendar />} />
-          <Route path="/week" element={<WeekCalendar />} />
-          <Route path="/day" element={<DayCalendar />} />
+          <Route path="/month/:year/:month/:day" element={<MonthCalendar />} />
+          <Route path="/week/:year/:month/:day" element={<WeekCalendar />} />
+          <Route path="/day/:year/:month/:day" element={<DayCalendar />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -1,80 +1,93 @@
-import React, { useState } from "react";
-import { format, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays, startOfWeek, endOfWeek } from "date-fns";
+import {
+  format,
+  addMonths,
+  subMonths,
+  addWeeks,
+  subWeeks,
+  addDays,
+  subDays,
+  startOfWeek,
+  endOfWeek,
+  isValid,
+} from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { openEventModal } from "../../features/eventModal/eventModalSlice";
 
-function Header({ viewType, onDateChange, currentDate = new Date() }) {
-  const [view, setView] = useState(viewType);
+function Header({ onDateChange, currentDate = new Date() }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const location = useLocation();
+  const { year, month, day } = useParams();
 
+  // Build date from route params or fallback
+  const yearInt = parseInt(year, 10);
+  const monthInt = parseInt(month, 10);
+  const dayInt = parseInt(day, 10);
+  const routeDate = new Date(yearInt, (monthInt || 1) - 1, dayInt || 1);
+  const finalDate = isValid(routeDate) ? routeDate : currentDate;
+
+  const pathSegments = location.pathname.split("/"); 
+  const viewType = pathSegments[1] || "month";
+
+  // Building param-based route
+  const getRoute = (view, dateObj) => {
+    const y = dateObj.getFullYear();
+    const m = dateObj.getMonth() + 1;
+    const d = dateObj.getDate();
+    return `/${view}/${y}/${m}/${d}`;
+  };
+
+  // Navigating to prev month,week or day
   const handlePrev = () => {
-    let newDate;
-    switch (viewType) {
-      case "month":
-        newDate = subMonths(currentDate, 1);
-        break;
-      case "week":
-        newDate = subWeeks(currentDate, 1);
-        break;
-      case "day":
-        newDate = subDays(currentDate, 1);
-        break;
-      default:
-        return;
+    let newDate = finalDate;
+    if (viewType === "month") {
+      newDate = subMonths(finalDate, 1);
+      navigate(getRoute("month", newDate));
+    } else if (viewType === "week") {
+      newDate = subWeeks(finalDate, 1);
+      navigate(getRoute("week", newDate));
+    } else if (viewType === "day") {
+      newDate = subDays(finalDate, 1);
+      navigate(getRoute("day", newDate));
     }
     onDateChange(newDate);
   };
 
+  // Navigating to next month,week or day
   const handleNext = () => {
-    let newDate;
-    switch (viewType) {
-      case "month":
-        newDate = addMonths(currentDate, 1);
-        break;
-      case "week":
-        newDate = addWeeks(currentDate, 1);
-        break;
-      case "day":
-        newDate = addDays(currentDate, 1);
-        break;
-      default:
-        return;
+    let newDate = finalDate;
+    if (viewType === "month") {
+      newDate = addMonths(finalDate, 1);
+      navigate(getRoute("month", newDate));
+    } else if (viewType === "week") {
+      newDate = addWeeks(finalDate, 1);
+      navigate(getRoute("week", newDate));
+    } else if (viewType === "day") {
+      newDate = addDays(finalDate, 1);
+      navigate(getRoute("day", newDate));
     }
     onDateChange(newDate);
   };
 
+  // Gets the title for the Header
   const getTitle = () => {
-    switch (viewType) {
-      case "month":
-        return format(currentDate, "MMMM yyyy");
-      case "week":
-        return `${format(startOfWeek(currentDate, { weekStartsOn: 0 }), "d MMM, yy")} - ${format(endOfWeek(currentDate, { weekStartsOn: 0 }), "d MMM, yy")}`;
-      case "day":
-        return format(currentDate, "d MMMM yyyy");
-      default:
-        return "";
+    if (viewType === "month") {
+      return format(finalDate, "MMMM yyyy");
+    } else if (viewType === "week") {
+      const start = format(startOfWeek(finalDate), "d MMM, yy");
+      const end = format(endOfWeek(finalDate), "d MMM, yy");
+      return `${start} - ${end}`;
+    } else if (viewType === "day") {
+      return format(finalDate, "d MMMM yyyy");
     }
+    return "";
   };
 
   const handleSelect = (e) => {
-    const selectedView = e.target.value;
-    setView(selectedView);
-    switch (selectedView) {
-      case "month":
-        navigate("/month");
-        break;
-      case "week":
-        navigate("/week");
-        break;
-      case "day":
-        navigate("/day");
-        break;
-      default:
-        break;
-    }
+    const newView = e.target.value;
+    navigate(getRoute(newView, finalDate));
   };
 
   const handleAddEvent = () => {
@@ -82,28 +95,27 @@ function Header({ viewType, onDateChange, currentDate = new Date() }) {
       openEventModal({
         modalType: "add",
         eventInfo: {
-          eventDate: format(currentDate, "yyyy-MM-dd"),
-          eventTitle: "",
-          eventStartTime: "",
-          eventEndTime: "",
-          eventAttendees: "",
+          eventDate: format(finalDate, "yyyy-MM-dd"),
         },
       })
     );
   };
 
+  // Navigates to today
   const handleToday = () => {
-    onDateChange(new Date());
+    const today = new Date();
+    onDateChange(today);
+    navigate(getRoute(viewType, today));
   };
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-4 bg-white shadow rounded-b-lg">
-      {/* Previous and Next buttons */}
+      {/* Previous & Next */}
       <div className="flex items-center space-x-1">
-        <button className="p-2 rounded-full cursor-pointer hover:bg-gray-300" onClick={handlePrev}>
+        <button className="p-2 rounded-full hover:bg-gray-300" onClick={handlePrev}>
           <ChevronLeft size={24} />
         </button>
-        <button className="p-2 rounded-full cursor-pointer hover:bg-gray-300" onClick={handleNext}>
+        <button className="p-2 rounded-full hover:bg-gray-300" onClick={handleNext}>
           <ChevronRight size={24} />
         </button>
       </div>
@@ -116,19 +128,19 @@ function Header({ viewType, onDateChange, currentDate = new Date() }) {
       <div className="flex items-center space-x-2">
         <button
           onClick={handleAddEvent}
-          className="bg-blue-500 text-white py-2 px-4 rounded-full hover:bg-blue-600 cursor-pointer"
+          className="bg-blue-500 text-white py-2 px-4 rounded-full hover:bg-blue-600"
         >
           Add Event
         </button>
         <button
           onClick={handleToday}
-          className="border border-gray-300 p-2 px-4 rounded-full hover:bg-gray-300 cursor-pointer"
+          className="border border-gray-300 p-2 px-4 rounded-full hover:bg-gray-300"
         >
           Today
         </button>
         <select
-          value={view}
-          className="border border-gray-300 p-2 rounded-full hover:bg-gray-300 cursor-pointer"
+          value={viewType}  
+          className="border border-gray-300 p-2 rounded-full hover:bg-gray-300"
           onChange={handleSelect}
         >
           <option value="month">Month</option>

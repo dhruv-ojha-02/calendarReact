@@ -1,25 +1,33 @@
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 import { useDispatch } from "react-redux";
+import { useParams } from "react-router-dom";
 import { useOutletContext } from "react-router-dom";
 import { openEventModal } from "../../features/eventModal/eventModalSlice";
 import Event from "../Event/Event";
+import { useMemo } from "react";
 
+// Group overlapping events by comparing their start/end times.
 function calculateOverlaps(events) {
   if (!events || events.length === 0) return [];
 
+  // Sort by start time so we process events in ascending order
   events.sort((a, b) => a.eventStartTime.localeCompare(b.eventStartTime));
 
   let activeEvents = [];
   let groupedEvents = [];
 
   events.forEach((event) => {
-    // check whether overlapping overlapping events or not by removing events that have already ended
+    // Remove any events that ended before this event’s start
     activeEvents = activeEvents.filter(
       (e) => e.eventEndTime > event.eventStartTime
     );
 
     activeEvents.push(event);
-    // Assigning additional data (eventIndex, overlapCount and groupIndex) to overlapped events
+
+    // eventIndex = position in the activeEvents array
+    // overlapCount = how many events are active at the same time
+    // groupIndex = index to identify this "batch"
+
     groupedEvents.push({
       ...event,
       eventIndex: activeEvents.findIndex((e) => e.eventId === event.eventId),
@@ -27,19 +35,35 @@ function calculateOverlaps(events) {
       groupIndex: groupedEvents.length,
     });
   });
+
   return groupedEvents;
 }
 
 function DayCalendar() {
   const dispatch = useDispatch();
   const { currentDate } = useOutletContext();
-  const formattedDate = format(currentDate, "yyyy-MM-dd");
+  const { year, month, day } = useParams();
 
-  const hours = Array.from({ length: 24 }, (_, index) => index);
+  // Build a date from route params if they exist
+  let routeDate = new Date(year, (month || 1) - 1, day || 1);
+  const finalDate = isValid(routeDate) ? routeDate : currentDate;
+
+  // Format as "yyyy-MM-dd" for filtering events
+  const formattedDate = useMemo(
+    () => format(finalDate, "yyyy-MM-dd"),
+    [finalDate]
+  );
+
+  const hours = useMemo(() => Array.from({ length: 24 }, (_, i) => i), []);
   const events = JSON.parse(localStorage.getItem("events")) || [];
 
-  const dayEvents = events.filter((event) => event.eventDate === formattedDate);
+  // Filter to only events that match this finalDate
+  const dayEvents = useMemo(
+    () => events.filter((evt) => evt.eventDate === formattedDate),
+    [events, formattedDate]
+  );
 
+  // When user clicks a time slot, open a new event modal
   const handleSlotClick = (hour) => {
     const formattedStartTime = hour < 10 ? `0${hour}:00` : `${hour}:00`;
     dispatch(
@@ -65,30 +89,34 @@ function DayCalendar() {
                 ? "12 PM"
                 : `${hour - 12} PM`;
 
-        const slotEvents = dayEvents.filter((event) => {
-          return parseInt(event.eventStartTime.split(":")[0], 10) === hour;
-        });
+        // Find events that start in this hour
+        const slotEvents = dayEvents.filter(
+          (evt) => parseInt(evt.eventStartTime.split(":")[0], 10) === hour
+        );
 
+        // Overlap logic
         const overlappedEvents = calculateOverlaps(slotEvents);
 
         return (
           <div key={hour} className="flex border-b border-gray-200 h-16">
+            {/* Time Label */}
             <div className="w-16 border-r border-gray-200 flex items-center justify-end pr-2 text-xs text-gray-500">
               {formattedHourLabel}
             </div>
 
+            {/* Slot area */}
             <div
               className="flex-1 relative bg-white hover:bg-gray-50 cursor-pointer"
               onClick={() => handleSlotClick(hour)}
             >
               <div className="mt-1 px-1 overflow-y-auto max-h-full">
-                {overlappedEvents.map((event) => (
-                  <div key={event.eventId} className="mb-1" >
+                {overlappedEvents.map((evt) => (
+                  <div key={evt.eventId} className="mb-1">
                     <Event
-                      event={event}
-                      overlapCount={event.overlapCount}
-                      eventIndex={event.eventIndex}
-                      groupIndex={event.groupIndex}
+                      event={evt}
+                      overlapCount={evt.overlapCount}
+                      eventIndex={evt.eventIndex}
+                      groupIndex={evt.groupIndex}
                     />
                   </div>
                 ))}
