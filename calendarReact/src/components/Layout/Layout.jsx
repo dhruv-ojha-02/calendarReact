@@ -5,6 +5,7 @@ import { closeEventModal } from '@/features/eventModal/eventModalSlice';
 import Header from "@/components/Header/Header";
 import EventModal from '@/components/Modals/EventModal';
 import EventDetailsModal from '@/components/Modals/EventDetailsModal';
+import { VIEW_TYPE_WEEK, VIEW_TYPE_DAY, VIEW_TYPE_MONTH, MODAL_TYPE_ADD, MODAL_TYPE_EDIT, MODAL_TYPE_DISPLAY } from '@/constants';
 
 function Layout() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -16,21 +17,21 @@ function Layout() {
     const pathSegments = location.pathname.split("/");
     switch (pathSegments[1]) {
       case "week":
-        return "week";
+        return VIEW_TYPE_WEEK;
       case "day":
-        return "day";
+        return VIEW_TYPE_DAY;
       default:
-        return "month";
+        return VIEW_TYPE_MONTH;
     }
   })();
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header viewType={viewType} currentDate={currentDate} onDateChange={setCurrentDate} />
-      {eventModal.isModalOpen && (eventModal.modalType === "add" || eventModal.modalType === "edit") && (
+      {eventModal.isModalOpen && (eventModal.modalType === MODAL_TYPE_ADD || eventModal.modalType === MODAL_TYPE_EDIT) && (
         <EventModal onClose={() => dispatch(closeEventModal())} />
       )}
-      {eventModal.isModalOpen && eventModal.modalType === "display" && (
+      {eventModal.isModalOpen && eventModal.modalType === MODAL_TYPE_DISPLAY && (
         <EventDetailsModal onClose={() => dispatch(closeEventModal())} />
       )}
 

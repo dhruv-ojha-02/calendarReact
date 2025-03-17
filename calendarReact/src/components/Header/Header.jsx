@@ -5,6 +5,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { openEventModal } from "@/features/eventModal/eventModalSlice";
+import { VIEW_TYPE_WEEK, VIEW_TYPE_DAY, VIEW_TYPE_MONTH, MODAL_TYPE_ADD, MODAL_TYPE_EDIT, MODAL_TYPE_DISPLAY } from '@/constants';
+
 
 function Header({ onDateChange, currentDate = new Date() }) {
   const navigate = useNavigate();
@@ -20,7 +22,7 @@ function Header({ onDateChange, currentDate = new Date() }) {
   const finalDate = isValid(routeDate) ? routeDate : currentDate;
 
   const pathSegments = location.pathname.split("/");
-  const viewType = pathSegments[1] || "month";
+  const viewType = pathSegments[1] || VIEW_TYPE_MONTH;
 
   // Building param-based route
   const getRoute = (view, dateObj) => {
@@ -33,15 +35,15 @@ function Header({ onDateChange, currentDate = new Date() }) {
   // Navigating to prev month,week or day
   const handlePrev = () => {
     let newDate = finalDate;
-    if (viewType === "month") {
+    if (viewType === VIEW_TYPE_MONTH) {
       newDate = subMonths(finalDate, 1);
-      navigate(getRoute("month", newDate));
-    } else if (viewType === "week") {
+      navigate(getRoute(VIEW_TYPE_MONTH, newDate));
+    } else if (viewType === VIEW_TYPE_WEEK) {
       newDate = subWeeks(finalDate, 1);
-      navigate(getRoute("week", newDate));
-    } else if (viewType === "day") {
+      navigate(getRoute(VIEW_TYPE_WEEK, newDate));
+    } else if (viewType === VIEW_TYPE_DAY) {
       newDate = subDays(finalDate, 1);
-      navigate(getRoute("day", newDate));
+      navigate(getRoute(VIEW_TYPE_DAY, newDate));
     }
     onDateChange(newDate);
   };
@@ -64,13 +66,13 @@ function Header({ onDateChange, currentDate = new Date() }) {
 
   // Gets the title for the Header
   const getTitle = () => {
-    if (viewType === "month") {
+    if (viewType === VIEW_TYPE_MONTH) {
       return format(finalDate, "MMMM yyyy");
-    } else if (viewType === "week") {
+    } else if (viewType === VIEW_TYPE_WEEK) {
       const start = format(startOfWeek(finalDate), "d MMM, yy");
       const end = format(endOfWeek(finalDate), "d MMM, yy");
       return `${start} - ${end}`;
-    } else if (viewType === "day") {
+    } else if (viewType === VIEW_TYPE_DAY) {
       return format(finalDate, "d MMMM yyyy");
     }
     return "";
@@ -84,7 +86,7 @@ function Header({ onDateChange, currentDate = new Date() }) {
   const handleAddEvent = () => {
     dispatch(
       openEventModal({
-        modalType: "add",
+        modalType: MODAL_TYPE_ADD,
         eventInfo: {
           eventDate: format(finalDate, "yyyy-MM-dd"),
         },
