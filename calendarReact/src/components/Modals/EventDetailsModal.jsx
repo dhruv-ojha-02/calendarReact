@@ -1,6 +1,6 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { closeEventModal, deleteEvent, openEventModal } from "../../features/eventModal/eventModalSlice";
+import { closeEventModal, deleteEvent, openEventModal } from "@/features/eventModal/eventModalSlice";
 
 function EventDetailsModal({ onClose }) {
   const dispatch = useDispatch();

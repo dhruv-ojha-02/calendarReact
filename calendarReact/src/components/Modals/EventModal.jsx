@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
-import { closeEventModal, editEvent, saveEvent } from "../../features/eventModal/eventModalSlice";
+import { closeEventModal, editEvent, saveEvent } from "@/features/eventModal/eventModalSlice";
 
 function EventModal({ onClose }) {
   const eventModal = useSelector((state) => state.eventModal);

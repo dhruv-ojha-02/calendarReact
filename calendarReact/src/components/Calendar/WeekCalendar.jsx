@@ -1,20 +1,14 @@
 import { useMemo } from "react";
-import {
-  startOfWeek,
-  format,
-  isToday,
-  isValid,
-} from "date-fns";
+import { startOfWeek, format, isToday, isValid, } from "date-fns";
 import { useDispatch } from "react-redux";
 import { useOutletContext, useParams } from "react-router-dom";
-import { openEventModal } from "../../features/eventModal/eventModalSlice";
-import Event from "../Event/Event";
-
+import { openEventModal } from "@/features/eventModal/eventModalSlice";
+import Event from "@/components/Event/Event";
 
 // Group overlapping events by comparing their start/end times.
 function calculateOverlaps(events) {
   if (!events || events.length === 0) return [];
-  
+
   // Sort by start time so we process events in ascending order
   events.sort((a, b) => a.eventStartTime.localeCompare(b.eventStartTime));
 
@@ -57,7 +51,7 @@ function WeekCalendar() {
     [finalDate]
   );
 
-  
+
   // Build an array of the 7 days in that week.
   const days = useMemo(() => {
     return Array.from({ length: 7 }, (_, i) => {

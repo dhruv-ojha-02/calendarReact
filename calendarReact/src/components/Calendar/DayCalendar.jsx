@@ -1,10 +1,10 @@
 import { format, isValid } from "date-fns";
+import { useMemo } from "react";
 import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
 import { useOutletContext } from "react-router-dom";
-import { openEventModal } from "../../features/eventModal/eventModalSlice";
-import Event from "../Event/Event";
-import { useMemo } from "react";
+import { openEventModal } from "@/features/eventModal/eventModalSlice";
+import Event from "@/components/Event/Event";
 
 // Group overlapping events by comparing their start/end times.
 function calculateOverlaps(events) {

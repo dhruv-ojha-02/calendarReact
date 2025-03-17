@@ -1,5 +1,5 @@
 import { useDispatch } from "react-redux";
-import { openEventModal } from "../../features/eventModal/eventModalSlice";
+import { openEventModal } from "@/features/eventModal/eventModalSlice";
 import { useOutletContext } from "react-router-dom";
 
 function Event({ event, overlapCount, eventIndex, groupIndex = 0 }) {

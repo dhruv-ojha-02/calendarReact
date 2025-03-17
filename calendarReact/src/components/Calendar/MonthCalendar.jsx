@@ -1,9 +1,9 @@
 import { eachDayOfInterval, endOfMonth, endOfWeek, format, startOfMonth, startOfWeek, isToday, getMonth, getYear, isValid } from "date-fns";
+import { useMemo } from "react";
 import { useOutletContext, useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { openEventModal } from "../../features/eventModal/eventModalSlice";
-import Event from "../Event/Event";
-import { useMemo } from "react";
+import { openEventModal } from "@/features/eventModal/eventModalSlice";
+import Event from "@/components/Event/Event";
 
 function MonthCalendar() {
   const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];

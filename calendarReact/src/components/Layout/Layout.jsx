@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { closeEventModal } from '../../features/eventModal/eventModalSlice';
-import Header from '../Header/Header';
-import EventModal from '../Modals/EventModal';
-import EventDetailsModal from '../Modals/EventDetailsModal';
+import { closeEventModal } from '@/features/eventModal/eventModalSlice';
+import Header from "@/components/Header/Header";
+import EventModal from '@/components/Modals/EventModal';
+import EventDetailsModal from '@/components/Modals/EventDetailsModal';
 
 function Layout() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -13,10 +13,11 @@ function Layout() {
   const location = useLocation();
 
   const viewType = (() => {
-    switch (location.pathname) {
-      case "/week":
+    const pathSegments = location.pathname.split("/");
+    switch (pathSegments[1]) {
+      case "week":
         return "week";
-      case "/day":
+      case "day":
         return "day";
       default:
         return "month";
